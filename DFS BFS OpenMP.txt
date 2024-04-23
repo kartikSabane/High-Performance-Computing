@@ -1,0 +1,216 @@
+// Run Code
+//g++ -Fopenmp DFSBFS.cpp -o DFSBFS
+// ./DFSBFS
+
+//Enter the number of vertices: 7
+
+//Enter the number of edges: 6
+
+//Enter the edges (format: source destination):
+
+//0 1
+
+//0 2
+
+//1 3
+
+//1 4
+
+//2 5
+
+//2 6
+
+/Enter the starting vertex for DFS and BFS traversal: 0
+
+
+Code:-
+#include<iostream>
+
+#include<queue>
+
+#include<vector>
+
+#include<omp.h>
+
+
+
+using namespace std;
+
+
+
+class Graph{
+
+	int V;
+
+	vector<vector<int>> adj;
+
+	
+
+public:
+
+	Graph(int V) : V(V) , adj(V){}
+
+	
+
+	void addEdge(int v ,int w){
+
+		adj[v].push_back(w);
+
+	}
+
+	
+
+	void ParallelDFS(int startIndex){
+
+		vector<bool> visited(V,false);
+
+		ParallelDFSUtil(startIndex,visited);
+
+	}
+
+	
+
+	void ParallelDFSUtil(int v, vector<bool>& visited){
+
+		visited[v]=true;
+
+		cout<<v<<" ";
+
+		
+
+		#pragma omp parallel for
+
+		for(int i=0;i<adj[v].size();++i){
+
+			int n=adj[v][i];
+
+			if(!visited[n]){
+
+				ParallelDFSUtil(n,visited);
+
+			}
+
+		}
+
+	}
+
+	
+
+	void ParallelBFS(int startIndex){
+
+		vector<bool> visited(V,false);
+
+		queue<int> q;
+
+		
+
+		visited[startIndex]=true;
+
+		q.push(startIndex);
+
+		
+
+		while(!q.empty()){
+
+			int v=q.front();
+
+			q.pop();
+
+			cout<<v<<" ";
+
+			
+
+			#pragma omp parallel for
+
+			for(int i=0;i<adj[v].size();++i){
+
+				int n=adj[v][i];
+
+				if(!visited[n]){
+
+					visited[n]=true;
+
+					q.push(n);
+
+				}
+
+			}
+
+			
+
+		}
+
+		
+
+	}
+
+};
+
+
+
+int main(){
+
+	int V, E;
+
+    	cout << "Enter the number of vertices: ";
+
+    	cin >> V;
+
+    	cout << "Enter the number of edges: ";
+
+    	cin >> E;
+
+
+
+    	Graph graph(V);	
+
+    	
+
+    	cout << "Enter the edges (format: source destination):" << endl;
+
+    	for (int i = 0; i < E; ++i) {
+
+        	int v, w;
+
+        	cin >> v >> w;
+
+        	graph.addEdge(v, w);
+
+    	}
+
+    	
+
+    	int startIndex;
+
+    	cout << "Enter the starting vertex for DFS and BFS traversal: ";
+
+    	cin >> startIndex;
+
+
+
+    	cout << "DFS traversal: ";
+
+    	graph.ParallelDFS(startIndex);
+
+    	cout << endl;
+
+
+
+    	cout << "BFS traversal: ";
+
+    	graph.ParallelBFS(startIndex);
+
+    	cout << endl;
+
+
+
+    	return 0;	
+
+
+
+
+
+}
+
+
+
